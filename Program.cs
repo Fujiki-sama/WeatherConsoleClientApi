@@ -3,12 +3,23 @@
 using Newtonsoft.Json;
 using System;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace WeatherConsoleClient
 {
+    public class WeatherData
+    {
+        public MainData Main { get; set; }
+    }
+
+    public class MainData
+    {
+        public double Temp { get; set; }
+    }
+
     public class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var client = new HttpClient();
 
@@ -20,13 +31,20 @@ namespace WeatherConsoleClient
 
             var userURL = $"https://api.openweathermap.org/data/2.5/weather?q={cityName}&appid={apiKey}&units=metric";
 
-            var weatherResponse = client.GetStringAsync(userURL).Result;
+            var weatherResponse = await client.GetStringAsync(userURL);
 
-            dynamic formattedResponse = JsonConvert.DeserializeObject(weatherResponse);
+            var weatherData = JsonConvert.DeserializeObject<WeatherData>(weatherResponse);
 
-            var temp = formattedResponse.main.temp;
+            var tempCelsius = weatherData.Main.Temp;
+            var tempFahrenheit = CelsiusToFahrenheit(tempCelsius);
 
-            Console.WriteLine($"\n{temp} degrees Celsius.");
+            Console.WriteLine($"\nTemperature in Celsius: {tempCelsius}°C");
+            Console.WriteLine($"Temperature in Fahrenheit: {tempFahrenheit}°F");
+        }
+
+        static double CelsiusToFahrenheit(double celsius)
+        {
+            return celsius * 9 / 5 + 32;
         }
     }
 }
