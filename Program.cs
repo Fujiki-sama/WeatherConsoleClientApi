@@ -1,50 +1,34 @@
-﻿// My API Key: fa3871e648f64a0a978a7bc78d9c35c1
 
-using Newtonsoft.Json;
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-
-namespace WeatherConsoleClient
+namespace MyFirstApi
 {
-    public class WeatherData
-    {
-        public MainData Main { get; set; }
-    }
-
-    public class MainData
-    {
-        public double Temp { get; set; }
-    }
-
     public class Program
     {
-        static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
-            var client = new HttpClient();
+            var builder = WebApplication.CreateBuilder(args);
 
-            Console.Write("Welcome to the Open Weather API!\nPlease input your API Key: ");
-            var apiKey = Console.ReadLine();
+            // Add services to the container.
 
-            Console.Write("\nThank you.\n\nEnter the city: ");
-            var cityName = Console.ReadLine().ToLower();
+            builder.Services.AddControllers();
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
 
-            var userURL = $"https://api.openweathermap.org/data/2.5/weather?q={cityName}&appid={apiKey}&units=metric";
+            var app = builder.Build();
 
-            var weatherResponse = await client.GetStringAsync(userURL);
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
-            var weatherData = JsonConvert.DeserializeObject<WeatherData>(weatherResponse);
+            app.UseAuthorization();
 
-            var tempCelsius = weatherData.Main.Temp;
-            var tempFahrenheit = CelsiusToFahrenheit(tempCelsius);
 
-            Console.WriteLine($"\nTemperature in Celsius: {tempCelsius}°C");
-            Console.WriteLine($"Temperature in Fahrenheit: {tempFahrenheit}°F");
-        }
+            app.MapControllers();
 
-        static double CelsiusToFahrenheit(double celsius)
-        {
-            return celsius * 9 / 5 + 32;
+            app.Run();
         }
     }
 }
